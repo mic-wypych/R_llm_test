@@ -9,7 +9,7 @@ comments <- read.csv("data/comments.csv", fileEncoding = "latin1")
 #### some preprocessing ----
 
 threads_tokenized <- threads  %>%
-  mutate(id = 1:944) %>%
+  mutate(id = 1:907) %>%
   select(id, title, text) %>%
   unnest_tokens(output = "word", input = "text", to_lower = TRUE) %>% 
   anti_join(stop_words) %>%
@@ -19,6 +19,7 @@ threads_tokenized <- threads  %>%
 #### Basic descriptions plots ----
 
 # n of characters
+threads$text <- stringi::stri_enc_toutf8(threads$text)
 
 threads %>%
   mutate(length = stringr::str_length(text)) %>%
@@ -30,28 +31,30 @@ threads %>%
 threads_tokenized %>%
   count(id) %>%
   ggplot(aes(x=n)) +
-  geom_density()
+  geom_density() +
+  labs(title = "number of words")
 
 #span in time: posts per month
 
 threads %>%
-  mutate(year_month =  format(date_utc, "%Y-%m")) %>%
+  mutate(year_month =  format(as.Date(date), "%Y-%m")) %>%
   count(year_month) %>%
   ggplot(aes(x = year_month, y = n)) +
   geom_line(group = 1) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(title = "posts per day")
 
 #scores
 
 threads %>%
   ggplot(aes(x=score)) +
-  geom_density()
+  geom_histogram(bins = 100)
 
 #posts per user
 threads %>%
   count(author) %>%
   ggplot(aes(x=n)) +
-  geom_density()
+  geom_histogram(bins = 100)
 
 
 ## comments
